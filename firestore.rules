@@ -1,0 +1,269 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(ownerId) {
+      return isSignedIn() && request.auth.uid == ownerId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity: student_profiles ---
+    match /student_profiles/{profileId} {
+      function isValidProfile(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.name is string && data.name.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.onboarding_completed is bool;
+      }
+
+      allow get: if isSignedIn() && (isOwner(profileId) || isOwner(resource.data.owner_id));
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      
+      allow create: if isSignedIn() && isOwner(profileId) && isValidProfile(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(profileId) && isOwner(existing().owner_id) && isValidProfile(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(profileId) && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: subjects ---
+    match /subjects/{subjectId} {
+      function isValidSubject(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.name is string && data.name.size() <= 128
+          && data.color is string && data.color.size() <= 64
+          && data.owner_id is string && data.owner_id.size() <= 128;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      
+      allow create: if isSignedIn() && isValidSubject(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidSubject(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: tasks ---
+    match /tasks/{taskId} {
+      function isValidTask(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.title is string && data.title.size() <= 200
+          && data.status is string && data.status.size() <= 64
+          && data.owner_id is string && data.owner_id.size() <= 128;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      
+      allow create: if isSignedIn() && isValidTask(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidTask(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: focus_sessions ---
+    match /focus_sessions/{sessionId} {
+      function isValidFocusSession(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.task_id is string && data.task_id.size() <= 128
+          && data.task_title is string && data.task_title.size() <= 256
+          && data.duration is number
+          && data.completed_at is string && data.completed_at.size() <= 64;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      
+      allow create: if isSignedIn() && isValidFocusSession(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidFocusSession(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: quizzes ---
+    match /quizzes/{quizId} {
+      function isValidQuiz(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.type is string && data.type.size() <= 64;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidQuiz(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidQuiz(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: quiz_attempts ---
+    match /quiz_attempts/{attemptId} {
+      function isValidQuizAttempt(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.quiz_id is string && data.quiz_id.size() <= 128
+          && data.score is number
+          && data.total_questions is number;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidQuizAttempt(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidQuizAttempt(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: mistakes ---
+    match /mistakes/{mistakeId} {
+      function isValidMistake(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.question is string && data.question.size() <= 4096
+          && data.student_answer is string && data.student_answer.size() <= 4096
+          && data.correct_answer is string && data.correct_answer.size() <= 4096;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidMistake(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidMistake(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: flashcards ---
+    match /flashcards/{cardId} {
+      function isValidFlashcard(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.front is string && data.front.size() <= 2048
+          && data.back is string && data.back.size() <= 4096
+          && data.source is string && data.source.size() <= 64;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidFlashcard(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidFlashcard(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: ai_insights ---
+    match /ai_insights/{insightId} {
+      function isValidAIInsight(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.best_study_time is string && data.best_study_time.size() <= 128
+          && data.weakest_subject is string && data.weakest_subject.size() <= 128;
+      }
+
+      allow get: if isSignedIn() && (isOwner(insightId) || isOwner(resource.data.owner_id));
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isOwner(insightId) && isValidAIInsight(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(insightId) && isOwner(existing().owner_id) && isValidAIInsight(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(insightId) && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: pdf_documents ---
+    match /pdf_documents/{pdfId} {
+      function isValidPdfDocument(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.filename is string && data.filename.size() <= 512;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidPdfDocument(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidPdfDocument(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: notes ---
+    match /notes/{noteId} {
+      function isValidNote(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.title is string && data.title.size() <= 256
+          && data.content is string && data.content.size() <= 100000;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidNote(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidNote(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: whiteboards ---
+    match /whiteboards/{whiteboardId} {
+      function isValidWhiteboard(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.subject_id is string && data.subject_id.size() <= 128
+          && data.title is string && data.title.size() <= 256
+          && data.canvas_data is string && data.canvas_data.size() <= 500000;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidWhiteboard(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidWhiteboard(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: calculator_history ---
+    match /calculator_history/{historyId} {
+      function isValidCalculatorLog(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.expression is string && data.expression.size() <= 1024
+          && data.result is string && data.result.size() <= 1024;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidCalculatorLog(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidCalculatorLog(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+
+    // --- Entity: notifications ---
+    match /notifications/{notificationId} {
+      function isValidNotification(data) {
+        return data.id is string && data.id.size() <= 128
+          && data.owner_id is string && data.owner_id.size() <= 128
+          && data.type is string && data.type.size() <= 64
+          && data.title is string && data.title.size() <= 256
+          && data.content is string && data.content.size() <= 4096
+          && data.read is bool;
+      }
+
+      allow get: if isSignedIn() && isOwner(resource.data.owner_id);
+      allow list: if isSignedIn() && resource.data.owner_id == request.auth.uid;
+      allow create: if isSignedIn() && isValidNotification(incoming()) && incoming().owner_id == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().owner_id) && isValidNotification(incoming()) && incoming().owner_id == existing().owner_id;
+      allow delete: if isSignedIn() && isOwner(existing().owner_id);
+    }
+  }
+}

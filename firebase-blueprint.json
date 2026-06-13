@@ -1,0 +1,301 @@
+{
+  "entities": {
+    "student_profiles": {
+      "title": "Student Profile",
+      "description": "Represents a student profile with onboarding status and study preferences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "parent_email": { "type": "string" },
+        "parent_phone": { "type": "string" },
+        "onboarding_completed": { "type": "boolean" },
+        "preferred_study_time": { "type": "string" },
+        "hours_per_day": { "type": "number" },
+        "focus_level": { "type": "string" },
+        "learning_style": { "type": "string" },
+        "streak": { "type": "number" },
+        "study_hours": { "type": "number" },
+        "consistency_score": { "type": "number" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["id", "name", "onboarding_completed", "owner_id"]
+    },
+    "subjects": {
+      "title": "Subject",
+      "description": "Represents a student learning subject",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "color": { "type": "string" },
+        "book_name": { "type": "string" },
+        "book_size": { "type": "number" },
+        "book_type": { "type": "string" },
+        "book_url": { "type": "string" },
+        "book_status": { "type": "string" },
+        "units_count": { "type": "number" },
+        "lessons_count": { "type": "number" },
+        "progress": { "type": "number" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["id", "name", "color", "owner_id"]
+    },
+    "tasks": {
+      "title": "Task",
+      "description": "Represents a study task or action item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "duration": { "type": "number" },
+        "due_date": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "owner_id": { "type": "string" }
+      },
+      "required": ["id", "title", "status", "owner_id"]
+    },
+    "focus_sessions": {
+      "title": "Focus Session",
+      "description": "Represents a completed Pomodoro/Timer focus session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "task_title": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "duration": { "type": "number" },
+        "completed_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "task_id", "task_title", "duration", "completed_at"]
+    },
+    "quizzes": {
+      "title": "Quiz",
+      "description": "Represents a generated evaluation quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "type": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "type", "created_at"]
+    },
+    "quiz_attempts": {
+      "title": "Quiz Attempt",
+      "description": "Represents a completed student quiz attempt with answers and mistakes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "quiz_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "score": { "type": "number" },
+        "total_questions": { "type": "number" },
+        "time_taken": { "type": "number" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "quiz_id", "score", "total_questions", "created_at"]
+    },
+    "mistakes": {
+      "title": "Mistake / Error Bank",
+      "description": "Represents a specific registered study mistake that needs review",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "question": { "type": "string" },
+        "student_answer": { "type": "string" },
+        "correct_answer": { "type": "string" },
+        "topic": { "type": "string" },
+        "weakness_score": { "type": "number" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "question", "student_answer", "correct_answer", "created_at"]
+    },
+    "flashcards": {
+      "title": "Flashcard",
+      "description": "Represents a learning flashcard generated from books, lessons or mistakes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "front": { "type": "string" },
+        "back": { "type": "string" },
+        "source": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "front", "back", "source", "created_at"]
+    },
+    "ai_insights": {
+      "title": "AI Insights",
+      "description": "Aggregated intelligence metrics of the student parsed via KABAKA AI",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "best_study_time": { "type": "string" },
+        "weakest_subject": { "type": "string" },
+        "strongest_subject": { "type": "string" },
+        "difficult_topics": { "type": "array", "items": { "type": "string" } },
+        "revision_schedule": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "best_study_time", "weakest_subject", "updated_at"]
+    },
+    "pdf_documents": {
+      "title": "PDF Document",
+      "description": "Metadata of a study PDF uploaded by a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "filename": { "type": "string" },
+        "file_size": { "type": "number" },
+        "pages_count": { "type": "number" },
+        "chapters": { "type": "array", "items": { "type": "string" } },
+        "uploaded_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "filename", "uploaded_at"]
+    },
+    "notes": {
+      "title": "Note",
+      "description": "A notebook entry created by a student and organized by subject",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "title", "content", "created_at", "updated_at"]
+    },
+    "whiteboards": {
+      "title": "Whiteboard",
+      "description": "An interactive drawing session linked to a subject",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "subject_id": { "type": "string" },
+        "subject_name": { "type": "string" },
+        "title": { "type": "string" },
+        "canvas_data": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "subject_id", "title", "canvas_data", "created_at"]
+    },
+    "calculator_history": {
+      "title": "Calculator Log",
+      "description": "A mathematical expression logged by a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "expression": { "type": "string" },
+        "result": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "expression", "result", "created_at"]
+    },
+    "notifications": {
+      "title": "Notification",
+      "description": "A dynamic alerts record push events for the user learning system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "owner_id": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "read": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "owner_id", "type", "title", "content", "read", "created_at"]
+    }
+  },
+  "firestore": {
+    "student_profiles/{profileId}": {
+      "schema": "student_profiles",
+      "description": "Collection of student profiles keyed by uid"
+    },
+    "subjects/{subjectId}": {
+      "schema": "subjects",
+      "description": "Collection of learning subjects for each student"
+    },
+    "tasks/{taskId}": {
+      "schema": "tasks",
+      "description": "Collection of task items for student subjects"
+    },
+    "focus_sessions/{sessionId}": {
+      "schema": "focus_sessions",
+      "description": "Collection of learning focus sessions per student"
+    },
+    "quizzes/{quizId}": {
+      "schema": "quizzes",
+      "description": "Collection of generated quizzes"
+    },
+    "quiz_attempts/{attemptId}": {
+      "schema": "quiz_attempts",
+      "description": "Collection of quiz evaluation attempts"
+    },
+    "mistakes/{mistakeId}": {
+      "schema": "mistakes",
+      "description": "Collection of mistakes/error bank files for weak points review"
+    },
+    "flashcards/{cardId}": {
+      "schema": "flashcards",
+      "description": "Collection of active revision flashcards"
+    },
+    "ai_insights/{insightId}": {
+      "schema": "ai_insights",
+      "description": "Collection of core student metrics and AI learning advice"
+    },
+    "pdf_documents/{pdfId}": {
+      "schema": "pdf_documents",
+      "description": "Uploaded PDF course syllabus documents metadata"
+    },
+    "notes/{noteId}": {
+      "schema": "notes",
+      "description": "Notes collection owned by students"
+    },
+    "whiteboards/{whiteboardId}": {
+      "schema": "whiteboards",
+      "description": "Drawings and sketch designs collection owned by students"
+    },
+    "calculator_history/{historyId}": {
+      "schema": "calculator_history",
+      "description": "Scientific computation calculation records"
+    },
+    "notifications/{notificationId}": {
+      "schema": "notifications",
+      "description": "Real-time alerts and game status records list"
+    }
+  }
+}
+

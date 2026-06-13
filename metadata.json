@@ -1,0 +1,6 @@
+{
+  "name": "KABAKA",
+  "description": "King of Learning Systems. An intelligent, elite study planner and personalized scheduler with royal AI-guidance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
